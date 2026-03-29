@@ -1,1 +1,1 @@
-export { PrivacyPage as default } from './PublicPages.jsx'
+export { PrivacyPage as default } from './RankingPage.jsx'

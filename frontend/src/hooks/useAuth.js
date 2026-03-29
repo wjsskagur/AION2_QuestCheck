@@ -1,34 +1,16 @@
-// hooks/useAuth.js
 import { useState, useCallback } from 'react'
 import { createApi } from '../api/index.js'
-
-const TOKEN_KEY   = 'aion2_token'
-const SESSION_KEY = 'aion2_session'
-
+const TK = 'aion2_token', SK = 'aion2_session'
 export function useAuth() {
-  const [session, setSession] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(SESSION_KEY)) || null }
-    catch { return null }
-  })
-
-  const token = localStorage.getItem(TOKEN_KEY)
+  const [session, setSession] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)) || null } catch { return null } })
+  const token = localStorage.getItem(TK)
   const api   = createApi(token)
-
   const login = useCallback(async (username, password) => {
-    const data = await createApi(null).post('/auth/login', { username, password })
-    localStorage.setItem(TOKEN_KEY,   data.token)
-    localStorage.setItem(SESSION_KEY, JSON.stringify({
-      id: data.id, username: data.username, role: data.role
-    }))
-    setSession({ id: data.id, username: data.username, role: data.role })
-    return data
+    const d = await createApi(null).post('/auth/login', { username, password })
+    localStorage.setItem(TK, d.token)
+    const s = { id: d.id, username: d.username, nickname: d.nickname, role: d.role, authProvider: d.authProvider, profileImage: d.profileImage }
+    localStorage.setItem(SK, JSON.stringify(s)); setSession(s); return d
   }, [])
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(SESSION_KEY)
-    setSession(null)
-  }, [])
-
+  const logout = useCallback(() => { localStorage.removeItem(TK); localStorage.removeItem(SK); setSession(null) }, [])
   return { session, api, login, logout, isAdmin: session?.role === 'ADMIN' }
 }

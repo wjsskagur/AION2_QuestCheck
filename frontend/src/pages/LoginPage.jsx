@@ -1,1 +1,1 @@
-export { LoginPage as default } from './PublicPages.jsx'
+export { LoginPage as default } from './LandingPage.jsx'

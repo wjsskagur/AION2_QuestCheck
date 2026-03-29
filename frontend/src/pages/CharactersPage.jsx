@@ -1,1 +1,1 @@
-export { CharactersPage as default } from './ProtectedPages.jsx'
+export { CharactersPage as default } from './Dashboard.jsx'

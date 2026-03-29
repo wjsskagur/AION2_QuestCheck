@@ -1,5 +1,3 @@
-# .gitattributes
-# Windows에서 작업해도 .sh 파일은 LF로 유지 (EC2 Linux 실행 오류 방지)
 * text=auto
 *.sh    text eol=lf
 *.yml   text eol=lf
@@ -11,5 +9,4 @@
 *.sql   text eol=lf
 *.md    text eol=lf
 *.json  text eol=lf
-*.xml   text eol=lf
 *.gradle text eol=lf

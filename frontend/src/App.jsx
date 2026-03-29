@@ -1,20 +1,21 @@
 import React, { createContext, useContext } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth.js'
+import LandingPage     from './pages/LandingPage.jsx'
+import LoginPage       from './pages/LoginPage.jsx'
+import OAuth2Callback  from './pages/OAuth2Callback.jsx'
+import Dashboard       from './pages/Dashboard.jsx'
+import CharactersPage  from './pages/CharactersPage.jsx'
+import CharDetailPage  from './pages/CharDetailPage.jsx'
+import RankingPage     from './pages/RankingPage.jsx'
+import NoticePage      from './pages/NoticePage.jsx'
+import PartyBoardPage  from './pages/PartyBoardPage.jsx'
+import PartyDetailPage from './pages/PartyDetailPage.jsx'
+import PartyWritePage  from './pages/PartyWritePage.jsx'
+import GuidePage       from './pages/GuidePage.jsx'
+import PrivacyPage     from './pages/PrivacyPage.jsx'
+import AdminPage       from './pages/AdminPage.jsx'
 
-// ── Pages ──
-import LandingPage    from './pages/LandingPage.jsx'
-import LoginPage      from './pages/LoginPage.jsx'
-import Dashboard      from './pages/Dashboard.jsx'
-import CharactersPage from './pages/CharactersPage.jsx'
-import CharDetailPage from './pages/CharDetailPage.jsx'
-import RankingPage    from './pages/RankingPage.jsx'
-import NoticePage     from './pages/NoticePage.jsx'
-import GuidePage      from './pages/GuidePage.jsx'
-import PrivacyPage    from './pages/PrivacyPage.jsx'
-import AdminPage      from './pages/AdminPage.jsx'
-
-// ── Auth Context ──
 export const AuthContext = createContext(null)
 export const useAuthCtx = () => useContext(AuthContext)
 
@@ -22,10 +23,9 @@ function PrivateRoute() {
   const token = localStorage.getItem('aion2_token')
   return token ? <Outlet /> : <Navigate to="/login" replace />
 }
-
 function AdminRoute() {
-  const session = JSON.parse(localStorage.getItem('aion2_session') || '{}')
-  return session?.role === 'ADMIN' ? <Outlet /> : <Navigate to="/dashboard" replace />
+  const s = JSON.parse(localStorage.getItem('aion2_session') || '{}')
+  return s?.role === 'ADMIN' ? <Outlet /> : <Navigate to="/dashboard" replace />
 }
 
 function Navbar() {
@@ -34,6 +34,7 @@ function Navbar() {
     <nav className="navbar">
       <NavLink to="/" className="navbar-brand">⚔ AION2 체커</NavLink>
       <div className="navbar-links">
+        <NavLink to="/party">파티모집</NavLink>
         <NavLink to="/ranking">랭킹</NavLink>
         <NavLink to="/notice">공지</NavLink>
         <NavLink to="/guide">가이드</NavLink>
@@ -43,7 +44,7 @@ function Navbar() {
       <div className="navbar-right">
         {session ? (
           <>
-            <span className="text-muted text-small">{session.username}</span>
+            <span className="text-muted text-small">{session.nickname || session.username}</span>
             <button className="btn btn-ghost btn-sm" onClick={logout}>로그아웃</button>
           </>
         ) : (
@@ -61,26 +62,25 @@ export default function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          {/* 공개 라우트 */}
-          <Route path="/"        element={<LandingPage />} />
-          <Route path="/login"   element={<LoginPage />} />
-          <Route path="/ranking" element={<RankingPage />} />
-          <Route path="/notice"  element={<NoticePage />} />
-          <Route path="/guide"   element={<GuidePage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-
-          {/* 보호 라우트 (JWT 필요) */}
+          <Route path="/"              element={<LandingPage />} />
+          <Route path="/login"         element={<LoginPage />} />
+          <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+          <Route path="/ranking"       element={<RankingPage />} />
+          <Route path="/notice"        element={<NoticePage />} />
+          <Route path="/party"         element={<PartyBoardPage />} />
+          <Route path="/party/:id"     element={<PartyDetailPage />} />
+          <Route path="/guide"         element={<GuidePage />} />
+          <Route path="/privacy"       element={<PrivacyPage />} />
           <Route element={<PrivateRoute />}>
-            <Route path="/dashboard"       element={<Dashboard />} />
-            <Route path="/characters"      element={<CharactersPage />} />
-            <Route path="/characters/:id"  element={<CharDetailPage />} />
+            <Route path="/dashboard"      element={<Dashboard />} />
+            <Route path="/characters"     element={<CharactersPage />} />
+            <Route path="/characters/:id" element={<CharDetailPage />} />
+            <Route path="/party/write"    element={<PartyWritePage />} />
+            <Route path="/party/:id/edit" element={<PartyWritePage />} />
           </Route>
-
-          {/* 관리자 전용 */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminPage />} />
           </Route>
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -1,1 +1,1 @@
-export { GuidePage as default } from './PublicPages.jsx'
+export { GuidePage as default } from './RankingPage.jsx'

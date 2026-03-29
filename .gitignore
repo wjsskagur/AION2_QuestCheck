@@ -1,16 +1,10 @@
-# .gitignore
-
-# ── 절대 올리면 안 되는 파일 ──
+# 절대 올리면 안 되는 파일
 .env
 .env.*
 *.pem
 *.ppk
-secrets/
-*secret*
-*password*
-*credential*
 
-# ── 백엔드 빌드 결과물 ──
+# 백엔드 빌드
 backend/build/
 backend/.gradle/
 backend/out/
@@ -18,23 +12,21 @@ backend/out/
 *.jar
 !backend/gradle/wrapper/gradle-wrapper.jar
 
-# ── 프론트엔드 빌드 결과물 ──
+# 프론트엔드
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
-# ── IDE ──
+# IDE
 .idea/
 *.iml
 .vscode/
-*.swp
-*.swo
 
-# ── OS ──
+# OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ── 로그 ──
+# 로그
 *.log
 logs/

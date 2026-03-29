@@ -1,1 +1,1 @@
-export { NoticePage as default } from './PublicPages.jsx'
+export { NoticePage as default } from './RankingPage.jsx'

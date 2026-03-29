@@ -5,11 +5,11 @@ on:
     branches: [main]
 
 env:
-  AWS_REGION:  ap-northeast-2
-  S3_DEPLOY:   aion2-deploy-artifacts
-  S3_FRONT:    aion2-quest-frontend
-  APP_NAME:    aion2-quest
-  DG_NAME:     aion2-prod
+  AWS_REGION: ap-northeast-2
+  S3_DEPLOY:  aion2-deploy-artifacts
+  S3_FRONT:   aion2-quest-frontend
+  APP_NAME:   aion2-quest
+  DG_NAME:    aion2-prod
 
 jobs:
   deploy:
@@ -17,64 +17,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ── 1. 백엔드 빌드 & 테스트 ──────────────────────
+      # ── 백엔드 빌드 ──────────────────────────────────────
       - uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-          cache: gradle
+        with: { java-version: '17', distribution: 'corretto', cache: gradle }
+      - name: Build backend
+        run: |
+          chmod +x backend/gradlew
+          cd backend && ./gradlew clean bootJar
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x backend/gradlew
-
-      - name: Backend build & test
-        run: cd backend && ./gradlew clean bootJar
-        # 테스트 실패 시 여기서 중단 → EC2에 broken 코드 배포 안 됨
-
-      # ── 2. 프론트엔드 빌드 ────────────────────────────
+      # ── 프론트엔드 빌드 ──────────────────────────────────
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Frontend build
+        with: { node-version: '20', cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - name: Build frontend
         run: cd frontend && npm ci && npm run build
 
-      # ── 3. AWS 자격증명 ──────────────────────────────
+      # ── AWS 자격증명 ─────────────────────────────────────
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region:            ${{ env.AWS_REGION }}
 
-      # ── 4. 프론트 S3 배포 + CloudFront 캐시 무효화 ──
-      - name: Deploy frontend to S3
+      # ── S3 프론트 배포 + CloudFront 무효화 ──────────────
+      - name: Deploy frontend
         run: |
-          # JS/CSS/이미지: 1년 캐시 (Vite가 파일명에 해시 포함)
           aws s3 sync frontend/dist/ s3://${{ env.S3_FRONT }}/ \
             --delete \
             --cache-control "public,max-age=31536000,immutable" \
             --exclude "index.html"
-          # index.html: 캐시 없음 (항상 최신 버전)
-          aws s3 cp frontend/dist/index.html \
-            s3://${{ env.S3_FRONT }}/index.html \
-            --cache-control "no-cache,no-store,must-revalidate"
-
-      - name: Invalidate CloudFront cache
-        run: |
+          aws s3 cp frontend/dist/index.html s3://${{ env.S3_FRONT }}/index.html \
+            --cache-control "no-cache,no-store"
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CF_DIST_ID }} \
             --paths "/*"
 
-      # ── 5. 백엔드 CodeDeploy ─────────────────────────
-      - name: Push to S3 & trigger CodeDeploy
+      # ── CodeDeploy 백엔드 배포 ───────────────────────────
+      - name: Deploy backend
         run: |
           aws deploy push \
             --application-name ${{ env.APP_NAME }} \
             --s3-location s3://${{ env.S3_DEPLOY }}/app.zip \
             --source .
-
           aws deploy create-deployment \
             --application-name ${{ env.APP_NAME }} \
             --deployment-group-name ${{ env.DG_NAME }} \
