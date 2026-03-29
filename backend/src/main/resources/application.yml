@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:mariadb://${DB_HOST:localhost}:3306/aion2_quest?characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME:aion2_user}
+    password: ${DB_PASSWORD:aion2_pass}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MariaDBDialect
+
+  scheduling:
+    enabled: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:aion2-quest-jwt-secret-key-must-be-32-characters-minimum}
+    expiration-ms: 86400000
+
+  character:
+    max-per-account: 16
+
+  claude:
+    api-key: ${CLAUDE_API_KEY:}
+    model: claude-haiku-4-5-20251001
+
+  crawler:
+    schedule: "0 0 */3 * * *"
+    notice-url: https://aion2.plaync.com/board/notice
